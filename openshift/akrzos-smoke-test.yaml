@@ -1,0 +1,68 @@
+# Validates:
+# * Create a namespace
+# * Create a Service
+# * Create a Route
+# * Create a deployment with single replica reachable via route
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  annontations:
+    openshift.io/node-selector: ''
+  name: akrzos-smoke-test
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: akrzos-smoke-test
+  namespace: akrzos-smoke-test
+  labels:
+    name: akrzos-smoke-test
+spec:
+  ports:
+  - name: akrzos-smoke-test
+    port: 80
+    protocol: TCP
+    targetPort: 3000
+  selector:
+    app: akrzos-smoke-test
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: akrzos-st-rt
+  namespace: akrzos-smoke-test
+spec:
+  tls:
+    termination: edge
+  to:
+    name: akrzos-smoke-test
+  port:
+    targetPort: akrzos-smoke-test
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: akrzos-smoke-test
+  name: akrzos-st-deployment
+  namespace: akrzos-smoke-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: akrzos-smoke-test
+  template:
+    metadata:
+      labels:
+        app: akrzos-smoke-test
+      name: akrzos-smoke-test
+    spec:
+      containers:
+      - name: grafana
+        image: quay.io/app-sre/grafana
+        ports:
+        - name: sc-grafana-http
+          containerPort: 3000
+      # nodeSelector:
+      #   kubernetes.io/hostname: vlan608-tpgk2-worker-0-5mm5t
