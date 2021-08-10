@@ -1,0 +1,9 @@
+---
+# all.yml sample vars
+
+ocp_config_path: /root/akrzos/
+
+ocp_kubeconfig: /root/bm/kubeconfig
+
+ocp_max_pods_mcp: worker
+ocp_max_pods: 530

@@ -1,0 +1,9 @@
+---
+# Playbook to quickly bump max-pods on an ocp cluster's mcp
+
+- name: Adjust Max Pods
+  hosts: orchestration
+  vars_files:
+    - vars/all.yml
+  roles:
+    - ocp-max-pods

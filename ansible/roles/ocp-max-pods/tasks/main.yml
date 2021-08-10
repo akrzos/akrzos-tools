@@ -1,0 +1,40 @@
+---
+# ocp-max-pods tasks
+
+- name: Create directories for ocp-max-pods
+  file:
+    path: "{{ item }}"
+    state: directory
+  loop:
+  - "{{ ocp_config_path }}"
+  - "{{ ocp_config_path }}/ocp-max-pods"
+
+- name: Template out kubeletconfig manifest
+  template:
+    src: max-pods.yml.j2
+    dest: "{{ ocp_config_path }}/ocp-max-pods/max-pods.yml"
+    mode: u+x
+
+- name: Label the machineconfigpool used to adjust max-pods
+  shell: |
+    KUBECONFIG={{ ocp_kubeconfig }} oc label --overwrite machineconfigpool {{ ocp_max_pods_mcp }} custom-kubelet=max-pods
+
+- name: Apply the kubeletconfig to adjust max-pods
+  shell: |
+    KUBECONFIG={{ ocp_kubeconfig }} oc apply -f {{ ocp_config_path }}/ocp-max-pods/max-pods.yml
+
+- name: Wait until MachineConfigPool is updating
+  shell: |
+    KUBECONFIG={{ ocp_kubeconfig }} oc get mcp --no-headers {{ ocp_max_pods_mcp }} | awk '{print $4}'
+  register: result
+  delay: 5
+  retries: 30
+  until: result.stdout == "True"
+
+- name: Wait until MachineConfigPool is updated
+  shell: |
+    KUBECONFIG={{ ocp_kubeconfig }} oc get mcp --no-headers {{ ocp_max_pods_mcp }} | awk '{print $3}'
+  register: result
+  delay: 10
+  retries: 180
+  until: result.stdout == "True"
