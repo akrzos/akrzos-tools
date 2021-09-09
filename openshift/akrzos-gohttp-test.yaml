@@ -1,0 +1,68 @@
+# Validates:
+# * Create a namespace
+# * Create a Service
+# * Create a Route
+# * Create a deployment with single replica reachable via route
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  annontations:
+    openshift.io/node-selector: ''
+  name: akrzos-gohttp
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gohttp
+  namespace: akrzos-gohttp
+  labels:
+    name: akrzos-gohttp
+spec:
+  ports:
+  - name: akrzos-gohttp
+    port: 80
+    protocol: TCP
+    targetPort: 8000
+  selector:
+    app: akrzos-gohttp
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: gohttp
+  namespace: akrzos-gohttp
+spec:
+  tls:
+    termination: edge
+  to:
+    name: akrzos-gohttp
+  port:
+    targetPort: akrzos-gohttp
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gohttp
+  namespace: akrzos-gohttp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: akrzos-gohttp
+  template:
+    metadata:
+      labels:
+        app: akrzos-gohttp
+    spec:
+      containers:
+      - name: gohttp
+        image: quay.io/redhat-performance/test-gohttp-probe:latest
+        ports:
+        - containerPort: 8000
+          protocol: TCP
+        env:
+        - name: PORT
+          value: "8000"
+      # nodeSelector:
+      #   kubernetes.io/hostname: vlan608-tpgk2-worker-0-5mm5t
