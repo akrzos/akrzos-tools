@@ -1,7 +1,7 @@
 ---
 # all.yml sample vars
 
-ocp_config_path: /root/akrzos/
+ocp_config_path: /root/akrzos
 
 ocp_kubeconfig: /root/bm/kubeconfig
 
