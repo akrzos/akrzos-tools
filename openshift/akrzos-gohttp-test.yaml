@@ -36,9 +36,9 @@ spec:
   tls:
     termination: edge
   to:
-    name: akrzos-gohttp
+    name: gohttp
   port:
-    targetPort: akrzos-gohttp
+    targetPort: 8000
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -64,5 +64,42 @@ spec:
         env:
         - name: PORT
           value: "8000"
-      # nodeSelector:
-      #   kubernetes.io/hostname: vlan608-tpgk2-worker-0-5mm5t
+        - name: LISTEN_DELAY_SECONDS
+          value: "10"
+        - name: LIVENESS_DELAY_SECONDS
+          value: "10"
+        - name: READINESS_DELAY_SECONDS
+          value: "30"
+        - name: RESPONSE_DELAY_MILLISECONDS
+          value: "50"
+        - name: LIVENESS_SUCCESS_MAX
+          value: "60"
+        - name: READINESS_SUCCESS_MAX
+          value: "30"
+        startupProbe:
+          initialDelaySeconds: 0
+          periodSeconds: 10
+          timeoutSeconds: 1
+          failureThreshold: 12
+          successThreshold: 1
+          httpGet:
+            path: "/livez"
+            port: 8000
+        livenessProbe:
+          initialDelaySeconds: 0
+          periodSeconds: 10
+          timeoutSeconds: 1
+          failureThreshold: 3
+          successThreshold: 1
+          httpGet:
+            path: "/livez"
+            port: 8000
+        readinessProbe:
+          initialDelaySeconds: 0
+          periodSeconds: 10
+          timeoutSeconds: 1
+          failureThreshold: 3
+          successThreshold: 1
+          httpGet:
+            path: "/readyz"
+            port: 8000

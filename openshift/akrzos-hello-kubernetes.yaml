@@ -1,0 +1,63 @@
+# Validates:
+# * Create a namespace
+# * Create a Service
+# * Create a Route
+# * Create a deployment with single replica reachable via route
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  annontations:
+    openshift.io/node-selector: ''
+  name: akrzos-hello
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hello
+  namespace: akrzos-hello
+  labels:
+    name: akrzos-hello
+spec:
+  ports:
+  - name: akrzos-hello
+    port: 80
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: akrzos-hello
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: hello
+  namespace: akrzos-hello
+spec:
+  tls:
+    termination: edge
+  to:
+    name: hello
+  port:
+    targetPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello
+  namespace: akrzos-hello
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: akrzos-hello
+  template:
+    metadata:
+      labels:
+        app: akrzos-hello
+    spec:
+      containers:
+      - name: hello
+        image: quay.io/akrzos/hello-kubernetes:latest
+        ports:
+        - containerPort: 8080
+          protocol: TCP
