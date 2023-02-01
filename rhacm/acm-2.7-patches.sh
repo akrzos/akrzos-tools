@@ -19,19 +19,22 @@ export KUBECONFIG=/root/bm/kubeconfig
 # echo "Sleep 45"
 # sleep 45
 
+
+echo "Applying ACM search-postgres configmap max_connections bump"
+POSTGRESQL_CONF="ssl = 'on' \n ssl_cert_file = '/sslcert/tls.crt' \n ssl_key_file = '/sslcert/tls.key' \n max_connections = 120"
+oc patch cm search-postgres --type merge -p '{"data":{"postgresql.conf": "'${POSTGRESQL_CONF}'" }}'
+echo "Sleep 10"
+sleep 10
 echo "Applying ACM search-v2-operator collector resources bump"
 oc patch search -n open-cluster-management search-v2-operator --type json -p '[{"op": "add", "path": "/spec/deployments/collector/resources", "value": {"limits": {"memory": "16Gi"}, "requests": {"memory": "64Mi", "cpu": "25m"}}}]'
-# oc patch search -n open-cluster-management search-v2-operator --type json -p '[{"op": "add", "path": "/spec/deployments/collector/resources", "value": {"limits": {"memory": "16Gi", "cpu": "2"}, "requests": {"memory": "32Mi", "cpu": "25m"}}}]'
 echo "Sleep 10"
 sleep 10
 echo "Applying ACM search-v2-operator database resources bump"
 oc patch search -n open-cluster-management search-v2-operator --type json -p '[{"op": "add", "path": "/spec/deployments/database/resources", "value": {"limits": {"memory": "16Gi"}, "requests": {"memory": "32Mi", "cpu": "25m"}}}]'
-# oc patch search -n open-cluster-management search-v2-operator --type json -p '[{"op": "add", "path": "/spec/deployments/database/resources", "value": {"limits": {"memory": "16Gi", "cpu": "2"}, "requests": {"memory": "32Mi", "cpu": "25m"}}}]'
 echo "Sleep 10"
 sleep 10
 echo "Applying ACM search-v2-operator indexer resources bump"
 oc patch search -n open-cluster-management search-v2-operator --type json -p '[{"op": "add", "path": "/spec/deployments/indexer/resources", "value": {"limits": {"memory": "16Gi"}, "requests": {"memory": "128Mi", "cpu": "25m"}}}]'
-# oc patch search -n open-cluster-management search-v2-operator --type json -p '[{"op": "add", "path": "/spec/deployments/indexer/resources", "value": {"limits": {"memory": "16Gi", "cpu": "2"}, "requests": {"memory": "32Mi", "cpu": "25m"}}}]'
 echo "Sleep 10"
 sleep 10
 
